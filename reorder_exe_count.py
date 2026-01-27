@@ -28,7 +28,14 @@ def rewrite_execution_count(notebook_path: Path):
     count = 1
     for cell in nb.cells:
         if cell.cell_type == "code":
+            # rewrite execution_count for the code cell
             cell.execution_count = count
+
+            # rewrite execution_count for the code cell's outputs
+            for output in cell.get("outputs", []):
+                if "execution_count" in output:
+                    output["execution_count"] = cell.execution_count
+
             count += 1
 
     nbformat.write(nb, notebook_path)
