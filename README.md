@@ -4,24 +4,7 @@ This utility script rewrites the `execution_count` values in a Jupyter Notebook 
 
 ## Example
 
-
-Before:
-```python
-[1]: ...
-[4]: ...
-[3]: ...
-```
-
-After running the script:
-```python
-[1]: ...
-[2]: ...
-[3]: ...
-```
-
-## Illustration
-
-| Error occurs | Debug (inconsistent cell numbers) | Run script (consistent cell numbers) |
+| Error occurs | Debugging causes inconsistent cell numbers | Run script for consistent cell numbers |
 |:---:|:---:|:---:|
 | <img src="img/error_img.png" width="250"> | <img src="img/error_fixed_img.png" width="250"> | <img src="img/normal_img.png" width="250"> |
 
