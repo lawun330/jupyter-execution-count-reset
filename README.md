@@ -15,10 +15,10 @@ This utility script rewrites the `execution_count` values in a Jupyter Notebook 
 
     a. From the command line:
       ```console
-      python rewrite_exe_count.py <insert-your-notebook-name>.ipynb
+      python reorder_exe_count.py <insert-your-notebook-name>.ipynb
       ```
     
     b. From a Jupyter notebook cell:
       ```console
-      !python rewrite_exe_count.py <insert-your-notebook-name>.ipynb
+      !python reorder_exe_count.py <insert-your-notebook-name>.ipynb
       ```
