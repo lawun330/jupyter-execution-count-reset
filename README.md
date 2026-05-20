@@ -63,6 +63,6 @@ Prerequisites:
 
 ## Deployment for Website (GUI)
 
-- Vercel: [vercel-url]
+- Vercel: [https://jupyter-execution-count-reset.vercel.app/][vercel-url]
 
 [vercel-url]: https://jupyter-execution-count-reset.vercel.app
