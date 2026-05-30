@@ -5,6 +5,7 @@ import { rewriteExecutionCount } from "@/lib/rewriteExecutionCount";
 
 type FixedNotebook = {
   id: string;
+  sourceName: string;
   downloadName: string;
   url: string;
 };
@@ -12,6 +13,10 @@ type FixedNotebook = {
 function fixedFileName(originalName: string): string {
   const stem = originalName.replace(/\.ipynb$/i, "");
   return `${stem}-fixed.ipynb`;
+}
+
+function sourceKey(name: string): string {
+  return name.toLowerCase();
 }
 
 function triggerDownload(nb: FixedNotebook) {
@@ -31,6 +36,13 @@ export default function Home() {
   const [downloadAllUsed, setDownloadAllUsed] = useState(false);
   const notebooksRef = useRef(notebooks);
   notebooksRef.current = notebooks;
+  const activeSourceNamesRef = useRef<Set<string>>(new Set());
+
+  useEffect(() => {
+    activeSourceNamesRef.current = new Set(
+      notebooks.map((nb) => sourceKey(nb.sourceName)),
+    );
+  }, [notebooks]);
 
   useEffect(() => {
     return () => {
@@ -55,15 +67,40 @@ export default function Home() {
     setDownloadAllUsed(true);
   }
 
+  function removeNotebook(id: string) {
+    setNotebooks((prev) => {
+      const removed = prev.find((nb) => nb.id === id);
+      if (removed) {
+        URL.revokeObjectURL(removed.url);
+        activeSourceNamesRef.current.delete(sourceKey(removed.sourceName));
+      }
+      return prev.filter((nb) => nb.id !== id);
+    });
+    setDownloadedIds((prev) => {
+      const next = new Set(prev);
+      next.delete(id);
+      return next;
+    });
+    setDownloadAllUsed(false);
+  }
+
   async function onFiles(fileList: FileList | null, input: HTMLInputElement) {
     setError(null);
     if (!fileList?.length) return;
 
     const added: FixedNotebook[] = [];
     const errors: string[] = [];
+    const seen = new Set(activeSourceNamesRef.current);
+
     for (const file of Array.from(fileList)) {
       if (!file.name.toLowerCase().endsWith(".ipynb")) {
         errors.push(`${file.name}: not a .ipynb file`);
+        continue;
+      }
+
+      const key = sourceKey(file.name);
+      if (seen.has(key)) {
+        errors.push(`${file.name} is already uploaded. Remove it from the list to upload again.`);
         continue;
       }
 
@@ -74,8 +111,11 @@ export default function Home() {
           type: "application/json",
         });
         const downloadName = fixedFileName(file.name);
+        seen.add(key);
+        activeSourceNamesRef.current.add(key);
         added.push({
           id: crypto.randomUUID(),
+          sourceName: file.name,
           downloadName,
           url: URL.createObjectURL(blob),
         });
@@ -100,8 +140,19 @@ export default function Home() {
 
   return (
     <main className="main">
-      <h1 className="title">Jupyter Execution Count Reset</h1>
-      <p className="description">Upload one or more Jupyter notebooks.</p>
+      <h1 className="title">Jupyter Notebook Execution Count Reset</h1>
+
+      <div className="intro">
+        <p className="description">
+          This free online tool fixes out-of-order <code>In [n]</code> execution counts in Jupyter{" "}
+          <code>.ipynb</code> notebooks without re-running any cells. Download the fixed files with a <code>-fixed.ipynb</code> suffix.
+        </p>
+        <ul className="intro-notes">
+          <li>You keep your existing outputs and you do not need to run the cells again.</li>
+          <li>This helps when the notebook already took hours to run, and rerunning everything is not practical.</li>
+          <li>Everything runs in your browser and your notebooks are not uploaded or saved on a server.</li>
+        </ul>
+      </div>
 
       <label className="upload-label">
         <input
@@ -125,7 +176,7 @@ export default function Home() {
           <div className="download-all-wrap">
             <button
               type="button"
-              className="download-btn download-btn--all"
+              className={`download-btn download-btn--all${downloadAllUsed ? " download-btn--used" : ""}`}
               onClick={onDownloadAll}
             >
               {downloadAllUsed ? "Redownload all" : "Download all"}
@@ -135,13 +186,23 @@ export default function Home() {
           <ul className="download-list">
             {notebooks.map((nb) => (
               <li key={nb.id} className="download-item">
-                <button
-                  type="button"
-                  className="download-btn"
-                  onClick={() => onSingleDownload(nb)}
-                >
-                  {buttonLabel(downloadedIds.has(nb.id), nb.downloadName)}
-                </button>
+                <div className="download-row">
+                  <button
+                    type="button"
+                    className={`download-btn${downloadedIds.has(nb.id) ? " download-btn--used" : ""}`}
+                    onClick={() => onSingleDownload(nb)}
+                  >
+                    {buttonLabel(downloadedIds.has(nb.id), nb.downloadName)}
+                  </button>
+                  <button
+                    type="button"
+                    className="download-remove"
+                    aria-label={`Remove ${nb.downloadName}`}
+                    onClick={() => removeNotebook(nb.id)}
+                  >
+                    <span aria-hidden="true">×</span>
+                  </button>
+                </div>
               </li>
             ))}
           </ul>
