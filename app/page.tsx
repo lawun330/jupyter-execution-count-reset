@@ -35,9 +35,11 @@ export default function Home() {
   const [notebooks, setNotebooks] = useState<FixedNotebook[]>([]);
   const [downloadedIds, setDownloadedIds] = useState<Set<string>>(() => new Set());
   const [downloadAllUsed, setDownloadAllUsed] = useState(false);
+  const [dragOver, setDragOver] = useState(false);
   const notebooksRef = useRef(notebooks);
   notebooksRef.current = notebooks;
   const activeSourceNamesRef = useRef<Set<string>>(new Set());
+  const dragDepthRef = useRef(0);
 
   useEffect(() => {
     activeSourceNamesRef.current = new Set(
@@ -85,7 +87,17 @@ export default function Home() {
     setDownloadAllUsed(false);
   }
 
-  async function onFiles(fileList: FileList | null, input: HTMLInputElement) {
+  function removeAllNotebooks() {
+    for (const nb of notebooksRef.current) {
+      URL.revokeObjectURL(nb.url);
+    }
+    activeSourceNamesRef.current.clear();
+    setNotebooks([]);
+    setDownloadedIds(new Set());
+    setDownloadAllUsed(false);
+  }
+
+  async function processFiles(fileList: FileList | null) {
     setError(null);
     if (!fileList?.length) return;
 
@@ -131,8 +143,37 @@ export default function Home() {
     if (errors.length) {
       setError(errors.join(" "));
     }
+  }
 
+  async function onFiles(fileList: FileList | null, input: HTMLInputElement) {
+    await processFiles(fileList);
     input.value = "";
+  }
+
+  function onDragEnter(e: React.DragEvent) {
+    e.preventDefault();
+    dragDepthRef.current += 1;
+    setDragOver(true);
+  }
+
+  function onDragLeave(e: React.DragEvent) {
+    e.preventDefault();
+    dragDepthRef.current -= 1;
+    if (dragDepthRef.current <= 0) {
+      dragDepthRef.current = 0;
+      setDragOver(false);
+    }
+  }
+
+  function onDragOver(e: React.DragEvent) {
+    e.preventDefault();
+  }
+
+  async function onDrop(e: React.DragEvent) {
+    e.preventDefault();
+    dragDepthRef.current = 0;
+    setDragOver(false);
+    await processFiles(e.dataTransfer.files);
   }
 
   function buttonLabel(downloaded: boolean, name: string) {
@@ -170,7 +211,13 @@ export default function Home() {
         </ul>
       </div>
 
-      <label className="upload-label">
+      <label
+        className={`upload-label${dragOver ? " upload-label--dragover" : ""}`}
+        onDragEnter={onDragEnter}
+        onDragLeave={onDragLeave}
+        onDragOver={onDragOver}
+        onDrop={onDrop}
+      >
         <input
           className="upload-input"
           type="file"
@@ -178,7 +225,7 @@ export default function Home() {
           multiple
           onChange={(e) => onFiles(e.target.files, e.target)}
         />
-        Choose .ipynb file(s)
+        Drag and drop .ipynb file(s) here, or click to choose
       </label>
 
       {error && (
@@ -196,6 +243,13 @@ export default function Home() {
               onClick={onDownloadAll}
             >
               {downloadAllUsed ? "Redownload all" : "Download all"}
+            </button>
+            <button
+              type="button"
+              className="cancel-all-btn"
+              onClick={removeAllNotebooks}
+            >
+              Cancel all
             </button>
           </div>
 
