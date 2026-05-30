@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { rewriteExecutionCount } from "@/lib/rewriteExecutionCount";
+import { githubRepoUrl } from "@/lib/site";
 
 type FixedNotebook = {
   id: string;
@@ -139,7 +140,22 @@ export default function Home() {
   }
 
   return (
-    <main className="main">
+    <>
+      <aside className="repo-star" aria-label="Support this project">
+        <p className="repo-star-text">
+          If this tool helped you, consider starring the repo on GitHub.
+        </p>
+        <a
+          className="repo-star-btn"
+          href={githubRepoUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          ★ Star
+        </a>
+      </aside>
+
+      <main className="main">
       <h1 className="title">Jupyter Notebook Execution Count Reset</h1>
 
       <div className="intro">
@@ -209,5 +225,6 @@ export default function Home() {
         </div>
       )}
     </main>
+    </>
   );
 }
