@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { rewriteExecutionCount } from "@/lib/rewriteExecutionCount";
-import { authorHandle, copyrightYear, githubRepoUrl } from "@/lib/site";
+import { authorHandle, githubRepoUrl } from "@/lib/site";
 
 type FixedNotebook = {
   id: string;
@@ -228,7 +228,7 @@ export default function Home() {
 
       <footer className="site-footer">
         <p className="site-footer-text">
-          © {copyrightYear}{" "}
+          © {new Date().getFullYear()}{" "}
           <a
             className="site-footer-link"
             href={`https://github.com/${authorHandle}`}
