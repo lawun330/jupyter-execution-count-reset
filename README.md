@@ -66,3 +66,7 @@ Prerequisites:
 - Vercel: [https://jupyter-execution-count-reset.vercel.app/][vercel-url]
 
 [vercel-url]: https://jupyter-execution-count-reset.vercel.app
+
+## License
+
+Copyright (c) 2026 [lawun330](https://github.com/lawun330). Released under the [MIT License](LICENSE).

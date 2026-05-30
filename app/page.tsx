@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { rewriteExecutionCount } from "@/lib/rewriteExecutionCount";
-import { githubRepoUrl } from "@/lib/site";
+import { authorHandle, copyrightYear, githubRepoUrl } from "@/lib/site";
 
 type FixedNotebook = {
   id: string;
@@ -225,6 +225,30 @@ export default function Home() {
         </div>
       )}
     </main>
+
+      <footer className="site-footer">
+        <p className="site-footer-text">
+          © {copyrightYear}{" "}
+          <a
+            className="site-footer-link"
+            href={`https://github.com/${authorHandle}`}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            {authorHandle}
+          </a>
+          {" · "}
+          <a
+            className="site-footer-link"
+            href={githubRepoUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Source on GitHub
+          </a>
+          {" · MIT License"}
+        </p>
+      </footer>
     </>
   );
 }
